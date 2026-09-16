@@ -62,7 +62,6 @@ function escapeHtml(value) {
 function parseBirthday(value) {
   if (!value) return null;
 
-  // Format ISO: 2013-02-28
   if (
     typeof value === 'string' &&
     /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -70,7 +69,6 @@ function parseBirthday(value) {
     return value;
   }
 
-  // Format dd/mm/yyyy
   if (
     typeof value === 'string' &&
     /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)
@@ -81,7 +79,6 @@ function parseBirthday(value) {
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
-  // Format dd-mm-yyyy
   if (
     typeof value === 'string' &&
     /^\d{1,2}-\d{1,2}-\d{4}$/.test(value)
@@ -117,15 +114,153 @@ function formatDate(value) {
 }
 
 
-function birthdayKey(value) {
+// ==============================
+// TODAY
+// ==============================
+
+function getTodayParts() {
+  const now = new Date();
+
+  return {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate()
+  };
+}
+
+
+function birthdayParts(value) {
   const date = parseBirthday(value);
 
-  if (!date) return 9999;
+  if (!date) return null;
 
   const [, month, day] =
     date.split('-').map(Number);
 
-  return month * 100 + day;
+  return {
+    month,
+    day
+  };
+}
+
+
+function isBirthdayToday(value) {
+  const birthday = birthdayParts(value);
+
+  if (!birthday) return false;
+
+  const today = getTodayParts();
+
+  return (
+    birthday.month === today.month &&
+    birthday.day === today.day
+  );
+}
+
+
+// ==============================
+// NEXT BIRTHDAY
+// ==============================
+
+function getNextBirthday(value) {
+  const birthday = birthdayParts(value);
+
+  if (!birthday) return null;
+
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  let year = today.getFullYear();
+
+  let next = new Date(
+    year,
+    birthday.month - 1,
+    birthday.day
+  );
+
+  next.setHours(0, 0, 0, 0);
+
+  if (next < today) {
+    year++;
+
+    next = new Date(
+      year,
+      birthday.month - 1,
+      birthday.day
+    );
+
+    next.setHours(0, 0, 0, 0);
+  }
+
+  return next;
+}
+
+
+function daysUntilBirthday(value) {
+  const next = getNextBirthday(value);
+
+  if (!next) return null;
+
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  const difference =
+    next.getTime() - today.getTime();
+
+  return Math.round(
+    difference / (1000 * 60 * 60 * 24)
+  );
+}
+
+
+function countdownText(days) {
+  if (days === null) {
+    return '';
+  }
+
+  if (days === 0) {
+    return 'Hari ini';
+  }
+
+  if (days === 1) {
+    return 'Besok';
+  }
+
+  return `${days} hari lagi`;
+}
+
+
+// ==============================
+// SORT
+// ==============================
+
+function sortUpcoming(list) {
+
+  return [...list].sort(
+    (a, b) => {
+
+      const daysA =
+        daysUntilBirthday(
+          a.tanggalLahir
+        );
+
+      const daysB =
+        daysUntilBirthday(
+          b.tanggalLahir
+        );
+
+      if (daysA !== daysB) {
+        return daysA - daysB;
+      }
+
+      return a.nama.localeCompare(
+        b.nama,
+        'id'
+      );
+    }
+  );
 }
 
 
@@ -137,32 +272,18 @@ function normalizePeople(data) {
 
   let source = [];
 
-  // Format baru:
-  // [
-  //   {
-  //     nama: "...",
-  //     tanggalLahir: "...",
-  //     angkatan: "..."
-  //   }
-  // ]
-
   if (Array.isArray(data)) {
     source = data;
-  }
-
-  // Format lama:
-  // {
-  //   people: [...]
-  // }
-
-  else if (Array.isArray(data.people)) {
+  } else if (
+    data &&
+    Array.isArray(data.people)
+  ) {
     source = data.people;
   }
 
   return source
     .map(person => {
 
-      // Support format baru
       const name =
         person.nama ??
         person.name ??
@@ -184,8 +305,12 @@ function normalizePeople(data) {
 
       return {
         nama: String(name).trim(),
-        tanggalLahir: parseBirthday(birthday),
-        angkatan: String(generation).trim()
+
+        tanggalLahir:
+          parseBirthday(birthday),
+
+        angkatan:
+          String(generation).trim()
       };
     })
     .filter(person =>
@@ -196,51 +321,7 @@ function normalizePeople(data) {
 
 
 // ==============================
-// SORT UPCOMING BIRTHDAYS
-// ==============================
-
-function sortUpcoming(list) {
-
-  const now = new Date();
-
-  const today =
-    (now.getMonth() + 1) * 100 +
-    now.getDate();
-
-  return [...list].sort(
-    (a, b) => {
-
-      let distanceA =
-        birthdayKey(a.tanggalLahir) -
-        today;
-
-      let distanceB =
-        birthdayKey(b.tanggalLahir) -
-        today;
-
-      if (distanceA < 0) {
-        distanceA += 1200;
-      }
-
-      if (distanceB < 0) {
-        distanceB += 1200;
-      }
-
-      if (distanceA !== distanceB) {
-        return distanceA - distanceB;
-      }
-
-      return a.nama.localeCompare(
-        b.nama,
-        'id'
-      );
-    }
-  );
-}
-
-
-// ==============================
-// FILTER OPTIONS
+// FILTERS
 // ==============================
 
 function setupFilters() {
@@ -261,9 +342,7 @@ function setupFilters() {
 
     generations
       .map(generation =>
-        `<option value="${escapeHtml(generation)}">
-          ${escapeHtml(generation)}
-        </option>`
+        `<option value="${escapeHtml(generation)}">${escapeHtml(generation)}</option>`
       )
       .join('');
 
@@ -273,9 +352,7 @@ function setupFilters() {
 
     months
       .map((month, index) =>
-        `<option value="${String(index + 1).padStart(2, '0')}">
-          ${month}
-        </option>`
+        `<option value="${String(index + 1).padStart(2, '0')}">${month}</option>`
       )
       .join('');
 
@@ -301,7 +378,88 @@ function setupFilters() {
 
 
 // ==============================
-// RENDER
+// TODAY BIRTHDAY SECTION
+// ==============================
+
+function renderTodayBirthdays() {
+
+  const todayPeople =
+    people.filter(person =>
+      isBirthdayToday(
+        person.tanggalLahir
+      )
+    );
+
+
+  const today =
+    new Date();
+
+
+  $('todayBirthdayDate').textContent =
+    new Intl.DateTimeFormat(
+      'id-ID',
+      {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }
+    ).format(today);
+
+
+  $('todayCount').textContent =
+    todayPeople.length;
+
+
+  if (todayPeople.length === 0) {
+
+    $('todayBirthdayList').innerHTML = `
+      <div class="today-empty">
+        Tidak ada yang berulang tahun hari ini.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  $('todayBirthdayList').innerHTML =
+    todayPeople
+      .sort((a, b) =>
+        a.nama.localeCompare(
+          b.nama,
+          'id'
+        )
+      )
+      .map(person => `
+        <div class="today-person">
+
+          <div class="today-person-name">
+            🎉 ${escapeHtml(person.nama)}
+          </div>
+
+          <div class="today-person-date">
+            ${formatDate(person.tanggalLahir)}
+          </div>
+
+          ${
+            person.angkatan
+              ? `
+                <div class="today-person-generation">
+                  ${escapeHtml(person.angkatan)}
+                </div>
+              `
+              : ''
+          }
+
+        </div>
+      `)
+      .join('');
+}
+
+
+// ==============================
+// RENDER TABLE
 // ==============================
 
 function render() {
@@ -382,31 +540,53 @@ function render() {
   $('tbody').innerHTML =
     filtered
       .map(
-        (person, index) => `
-          <tr>
-            <td>${index + 1}</td>
+        (person, index) => {
 
-            <td>
-              <strong>
-                ${escapeHtml(person.nama)}
-              </strong>
-            </td>
+          const days =
+            daysUntilBirthday(
+              person.tanggalLahir
+            );
 
-            <td>
-              ${formatDate(person.tanggalLahir)}
-            </td>
+          return `
+            <tr>
 
-            <td>
-              ${escapeHtml(person.angkatan)}
-            </td>
-          </tr>
-        `
+              <td>
+                ${index + 1}
+              </td>
+
+              <td>
+                <strong>
+                  ${escapeHtml(person.nama)}
+                </strong>
+              </td>
+
+              <td>
+                ${formatDate(
+                  person.tanggalLahir
+                )}
+
+                <br>
+
+                <span class="countdown">
+                  ${countdownText(days)}
+                </span>
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  person.angkatan
+                )}
+              </td>
+
+            </tr>
+          `;
+        }
       )
       .join('');
 
 
   $('empty').classList.toggle(
-    'hide',
+    'hidden',
     filtered.length !== 0
   );
 }
@@ -423,6 +603,7 @@ async function loadData() {
       `data.json?v=${Date.now()}`
     );
 
+
   if (!dataResponse.ok) {
     throw new Error(
       'data.json tidak ditemukan.'
@@ -434,6 +615,7 @@ async function loadData() {
     await fetch(
       `auth.json?v=${Date.now()}`
     );
+
 
   if (!authResponse.ok) {
     throw new Error(
@@ -478,6 +660,8 @@ async function loadData() {
 
 
   setupFilters();
+
+  renderTodayBirthdays();
 }
 
 
@@ -495,6 +679,7 @@ async function login() {
 
 
   if (!password) {
+
     $('loginError').textContent =
       'Masukkan password.';
 
@@ -520,22 +705,23 @@ async function login() {
     }
 
 
-    // Password benar
     sessionStorage.setItem(
       'birthday_logged_in',
       '1'
     );
 
 
-    // Masuk dashboard
     $('loginView')
       .classList
       .add('hidden');
+
 
     $('appView')
       .classList
       .remove('hidden');
 
+
+    renderTodayBirthdays();
 
     render();
 
@@ -634,7 +820,6 @@ async function start() {
     await loadData();
 
 
-    // Jika sebelumnya sudah login
     if (
       sessionStorage.getItem(
         'birthday_logged_in'
@@ -643,11 +828,15 @@ async function start() {
 
       $('loginView')
         .classList
-        .add('hide');
+        .add('hidden');
+
 
       $('appView')
         .classList
-        .remove('hide');
+        .remove('hidden');
+
+
+      renderTodayBirthdays();
 
       render();
     }
