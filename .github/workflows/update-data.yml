@@ -1,0 +1,31 @@
+name: Update birthday data
+on:
+  schedule:
+    - cron: '5 0 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r requirements.txt
+      - name: Download Excel and generate data
+        env:
+          GOOGLE_DRIVE_FILE_ID: ${{ secrets.GOOGLE_DRIVE_FILE_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/update_data.py
+      - name: Generate login hash
+        env:
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+        run: python scripts/build_auth.py
+      - name: Commit generated files
+        run: |
+          git config user.name birthday-dashboard-bot
+          git config user.email actions@users.noreply.github.com
+          git add public/data.json public/auth.json
+          git diff --cached --quiet || git commit -m 'chore: update birthday data'
+          git push
