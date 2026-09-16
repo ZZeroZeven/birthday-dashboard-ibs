@@ -530,11 +530,11 @@ async function login() {
     // Masuk dashboard
     $('loginView')
       .classList
-      .add('hide');
+      .add('hidden');
 
     $('appView')
       .classList
-      .remove('hide');
+      .remove('hidden');
 
 
     render();
