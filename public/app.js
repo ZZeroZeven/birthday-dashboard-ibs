@@ -1,10 +1,307 @@
-const $=id=>document.getElementById(id);const state={people:[],hash:''};
-async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function fmt(s){let [y,m,d]=s.split('-').map(Number);return new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(y,m-1,d))}
-function sortUpcoming(a){let n=new Date(),today=(n.getMonth()+1)*100+n.getDate();return [...a].sort((x,y)=>{let k=z=>{let [m,d]=z.birthday.slice(5).split('-').map(Number);return m*100+d};let dx=k(x)>=today?k(x)-today:1200+k(x)-today,dy=k(y)>=today?k(y)-today:1200+k(y)-today;return dx-dy||x.name.localeCompare(y.name,'id')})}
-function render(){let q=$('search').value.toLowerCase().trim(),m=$('month').value,d=$('day').value,g=$('generation').value;let a=state.people.filter(p=>{let [y,mm,dd]=p.birthday.split('-');return(!q||p.name.toLowerCase().includes(q))&&(!m||mm===m)&&(!d||dd===d)&&(!g||p.angkatan===g)});a=sortUpcoming(a);$('shown').textContent=a.length;$('resultLabel').textContent=a.length+' data';$('tbody').innerHTML=a.map((p,i)=>`<tr><td>${i+1}</td><td><b>${esc(p.name)}</b></td><td>${fmt(p.birthday)}</td><td><span>${esc(p.angkatan)}</span></td></tr>`).join('');$('empty').classList.toggle('hidden',a.length>0)}
-function filters(){let gs=[...new Set(state.people.map(x=>x.angkatan))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'id'));$('generation').innerHTML='<option value="">Semua angkatan</option>'+gs.map(x=>`<option>${esc(x)}</option>`).join('');$('day').innerHTML='<option value="">Semua tanggal</option>'+Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}</option>`).join('')}
-async function load(){let [d,a]=await Promise.all([fetch('data.json?v='+Date.now()),fetch('auth.json?v='+Date.now())]);if(!d.ok||!a.ok)throw Error('Data dashboard belum dibuat. Jalankan workflow Update birthday data.');let dj=await d.json(),aj=await a.json();state.people=dj.people||[];state.hash=aj.passwordHash||'';$('total').textContent=state.people.length;$('updated').textContent=dj.updatedAt?new Date(dj.updatedAt).toLocaleString('id-ID'):'-';filters();render()}
-async function login(){let h=await sha256($('password').value);if(h===state.hash&&h){sessionStorage.setItem('birthday-login','1');$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');render()}else $('loginError').textContent='Password salah.'}
-$('loginBtn').onclick=login;$('password').onkeydown=e=>{if(e.key==='Enter')login()};$('logoutBtn').onclick=()=>{sessionStorage.removeItem('birthday-login');$('appView').classList.add('hidden');$('loginView').classList.remove('hidden')};['search','month','day','generation'].forEach(id=>$(id).addEventListener('input',render));$('resetBtn').onclick=()=>{['search','month','day','generation'].forEach(id=>$(id).value='');render()};(async()=>{try{await load();if(sessionStorage.getItem('birthday-login')==='1'){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');render()}}catch(e){$('loginError').textContent=e.message}})();
+const $ = id => document.getElementById(id);
+
+let people = [];
+let hash = '';
+
+const months = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember'
+];
+
+async function sha(text) {
+  const buffer = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(text)
+  );
+
+  return [...new Uint8Array(buffer)]
+    .map(x => x.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function esc(value) {
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char])
+  );
+}
+
+function formatDate(value) {
+  if (!value) return '-';
+
+  const [year, month, day] = value.split('-').map(Number);
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date(year, month - 1, day));
+}
+
+function birthdayKey(value) {
+  const [, month, day] = value.split('-').map(Number);
+  return month * 100 + day;
+}
+
+function sortUpcoming(list) {
+  const now = new Date();
+
+  const today =
+    (now.getMonth() + 1) * 100 +
+    now.getDate();
+
+  return [...list].sort((a, b) => {
+    let distanceA = birthdayKey(a.tanggalLahir) - today;
+    let distanceB = birthdayKey(b.tanggalLahir) - today;
+
+    if (distanceA < 0) distanceA += 1200;
+    if (distanceB < 0) distanceB += 1200;
+
+    return (
+      distanceA - distanceB ||
+      a.nama.localeCompare(b.nama, 'id')
+    );
+  });
+}
+
+function setupFilters() {
+  const generations = [
+    ...new Set(
+      people
+        .map(person => person.angkatan)
+        .filter(Boolean)
+    )
+  ].sort((a, b) =>
+    a.localeCompare(b, 'id')
+  );
+
+  $('generation').innerHTML =
+    '<option value="">Semua angkatan</option>' +
+    generations
+      .map(
+        generation =>
+          `<option value="${esc(generation)}">${esc(generation)}</option>`
+      )
+      .join('');
+
+  $('month').innerHTML =
+    '<option value="">Semua bulan</option>' +
+    months
+      .map(
+        (month, index) =>
+          `<option value="${String(index + 1).padStart(2, '0')}">${month}</option>`
+      )
+      .join('');
+
+  $('day').innerHTML =
+    '<option value="">Semua tanggal</option>' +
+    Array.from(
+      { length: 31 },
+      (_, index) =>
+        `<option value="${String(index + 1).padStart(2, '0')}">${index + 1}</option>`
+    ).join('');
+}
+
+function render() {
+  const query = $('search').value
+    .toLowerCase()
+    .trim();
+
+  const selectedMonth = $('month').value;
+  const selectedDay = $('day').value;
+  const selectedGeneration = $('generation').value;
+
+  const filtered = sortUpcoming(
+    people.filter(person => {
+      const parts = person.tanggalLahir.split('-');
+
+      const matchesName =
+        !query ||
+        person.nama
+          .toLowerCase()
+          .includes(query);
+
+      const matchesMonth =
+        !selectedMonth ||
+        parts[1] === selectedMonth;
+
+      const matchesDay =
+        !selectedDay ||
+        parts[2] === selectedDay;
+
+      const matchesGeneration =
+        !selectedGeneration ||
+        person.angkatan === selectedGeneration;
+
+      return (
+        matchesName &&
+        matchesMonth &&
+        matchesDay &&
+        matchesGeneration
+      );
+    })
+  );
+
+  $('total').textContent = people.length;
+  $('shown').textContent = filtered.length;
+  $('resultLabel').textContent =
+    `(${filtered.length} data)`;
+
+  $('tbody').innerHTML = filtered
+    .map(
+      (person, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>
+            <strong>${esc(person.nama)}</strong>
+          </td>
+          <td>${formatDate(person.tanggalLahir)}</td>
+          <td>${esc(person.angkatan)}</td>
+        </tr>
+      `
+    )
+    .join('');
+
+  $('empty').classList.toggle(
+    'hide',
+    filtered.length > 0
+  );
+}
+
+async function loadData() {
+  const [dataResponse, authResponse] =
+    await Promise.all([
+      fetch(`data.json?v=${Date.now()}`),
+      fetch(`auth.json?v=${Date.now()}`)
+    ]);
+
+  if (!dataResponse.ok) {
+    throw new Error(
+      'data.json tidak ditemukan. Jalankan workflow Update birthday data terlebih dahulu.'
+    );
+  }
+
+  if (!authResponse.ok) {
+    throw new Error(
+      'auth.json tidak ditemukan. Jalankan workflow Update birthday data terlebih dahulu.'
+    );
+  }
+
+  const rawData = await dataResponse.json();
+  const authData = await authResponse.json();
+
+  /*
+   * update_data.py menghasilkan ARRAY langsung:
+   *
+   * [
+   *   {
+   *     "nama": "...",
+   *     "tanggalLahir": "...",
+   *     "angkatan": "..."
+   *   }
+   * ]
+   *
+   * Karena itu kita langsung gunakan rawData.
+   */
+
+  if (Array.isArray(rawData)) {
+    people = rawData;
+  }
+
+  /*
+   * Untuk berjaga-jaga jika nanti format data.json
+   * berubah menjadi { people: [...] }.
+   */
+  else if (Array.isArray(rawData.people)) {
+    people = rawData.people;
+  } else {
+    people = [];
+  }
+
+  hash = authData.passwordHash || '';
+
+  $('updated').textContent =
+    new Date().toLocaleString('id-ID');
+
+  setupFilters();
+  render();
+}
+
+$('loginBtn').onclick = async () => {
+  const password = $('password').value;
+
+  const passwordHash = await sha(password);
+
+  if (passwordHash === hash && hash) {
+    sessionStorage.ok = '1';
+
+    $('loginView').classList.add('hide');
+    $('appView').classList.remove('hide');
+
+    render();
+  } else {
+    $('loginError').textContent =
+      'Password salah.';
+  }
+};
+
+$('password').onkeydown = event => {
+  if (event.key === 'Enter') {
+    $('loginBtn').click();
+  }
+};
+
+$('logoutBtn').onclick = () => {
+  sessionStorage.removeItem('ok');
+  location.reload();
+};
+
+['search', 'month', 'day', 'generation']
+  .forEach(id => {
+    $(id).oninput = render;
+  });
+
+$('resetBtn').onclick = () => {
+  $('search').value = '';
+  $('month').value = '';
+  $('day').value = '';
+  $('generation').value = '';
+
+  render();
+};
+
+loadData()
+  .then(() => {
+    if (sessionStorage.ok === '1') {
+      $('loginView').classList.add('hide');
+      $('appView').classList.remove('hide');
+
+      render();
+    }
+  })
+  .catch(error => {
+    console.error(error);
+
+    $('loginError').textContent =
+      error.message;
+  });
