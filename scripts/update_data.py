@@ -3,7 +3,7 @@ import io
 import json
 import re
 import requests
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from openpyxl import load_workbook
 
 
@@ -331,8 +331,6 @@ def main():
         os.path.dirname(OUTPUT_FILE),
         exist_ok=True,
     )
-
-   from datetime import datetime, timezone
 
     with open(
     OUTPUT_FILE,
