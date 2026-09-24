@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b12">
+  <title>Birthday Directory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="loginView" class="login-view">
+    <section class="login-card">
+      <div class="login-glow"></div>
+      <div class="cake" aria-hidden="true">🎂</div>
+      <p class="eyebrow">BIRTHDAY DIRECTORY</p>
+      <h1>Upcoming <b>Birthdays</b></h1>
+      <p class="login-subtitle">Masuk untuk melihat daftar ulang tahun yang akan datang.</p>
+
+      <div class="input-wrap">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="Masukkan password">
+      </div>
+
+      <button id="loginBtn" class="primary-btn" type="button">
+        <span>Masuk</span>
+        <span class="btn-arrow" aria-hidden="true">→</span>
+      </button>
+      <small id="loginError" class="login-error" role="alert"></small>
+    </section>
+  </main>
+
+  <main id="appView" class="app-view hide" aria-hidden="true">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">BIRTHDAY DIRECTORY</p>
+        <h1>Upcoming <b>Birthdays</b></h1>
+        <p class="page-subtitle">Daftar ulang tahun berdasarkan data terbaru.</p>
+      </div>
+      <button id="logoutBtn" class="secondary-btn" type="button">Keluar</button>
+    </header>
+
+    <section class="stats" aria-label="Ringkasan data">
+      <div class="stat-card">
+        <span>Total data</span>
+        <strong id="total">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Ditampilkan</span>
+        <strong id="shown">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Diperbarui</span>
+        <strong id="updated">-</strong>
+      </div>
+    </section>
+
+    <section id="todayBirthday" class="today-birthday" aria-live="polite">
+      <div class="today-header">
+        <div>
+          <div class="eyebrow">TODAY</div>
+          <h2>🎂 Ulang Tahun Hari Ini</h2>
+          <p id="todayBirthdayDate">-</p>
+        </div>
+        <div id="todayCount" class="today-count">0</div>
+      </div>
+      <div id="todayBirthdayList" class="today-list"></div>
+    </section>
+
+    <section class="filters-panel">
+      <div class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input id="search" type="search" autocomplete="off" placeholder="Cari nama..." aria-label="Cari nama">
+      </div>
+      <select id="month" aria-label="Filter bulan">
+        <option value="">Semua bulan</option>
+      </select>
+      <select id="day" aria-label="Filter tanggal">
+        <option value="">Semua tanggal</option>
+      </select>
+      <select id="generation" aria-label="Filter angkatan">
+        <option value="">Semua angkatan</option>
+      </select>
+      <button id="resetBtn" class="secondary-btn" type="button">Reset</button>
+    </section>
+
+    <section class="results-card">
+      <div class="results-heading">
+        <div>
+          <div class="eyebrow">UPCOMING</div>
+          <h2>Ulang tahun yang akan datang <span id="resultLabel"></span></h2>
+        </div>
+        <div id="resultPulse" class="result-pulse" aria-hidden="true"></div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Tanggal Lahir</th>
+              <th>Angkatan</th>
+              <th>Countdown</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="empty" class="empty-state hide">
+        <div class="empty-icon">⌁</div>
+        <strong>Tidak ada data</strong>
+        <span>Coba ubah kata kunci atau filter pencarian.</span>
+      </div>
+    </section>
+
+    <footer>Birthday Directory • Google Drive + GitHub Actions + GitHub Pages</footer>
+  </main>
+
+  <script src="app.js?v=3"></script>
+</body>
+</html>
