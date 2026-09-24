@@ -121,7 +121,6 @@ def parse_date(value):
     if not text:
         return None
 
-    # Format: dd/mm/yyyy
     formats = [
         "%d/%m/%Y",
         "%d-%m-%Y",
@@ -136,7 +135,6 @@ def parse_date(value):
         except ValueError:
             pass
 
-    # Indonesian month names
     months = {
         "januari": "01",
         "februari": "02",
@@ -182,14 +180,6 @@ def find_columns(ws):
     name_col = None
     birthday_col = None
     generation_col = None
-
-    # File format:
-    # Row 2 = main headers
-    # Row 3 = sub headers
-    # Row 4+ = data
-    #
-    # We still search dynamically so small changes
-    # in formatting don't break the script.
 
     for row in range(1, min(ws.max_row, 20) + 1):
         headers = [
@@ -248,7 +238,6 @@ def load_students(excel_bytes):
         ", ".join(workbook.sheetnames)
     )
 
-    # File baru menggunakan sheet MAIN
     if "MAIN" not in workbook.sheetnames:
         raise RuntimeError(
             "Sheet 'MAIN' tidak ditemukan. "
@@ -271,8 +260,6 @@ def load_students(excel_bytes):
 
     students = []
 
-    # Data dimulai setelah header/sub-header.
-    # Dengan format sekarang, data efektif mulai row 4.
     for row in range(header_row + 2, ws.max_row + 1):
 
         name = ws.cell(
@@ -333,19 +320,19 @@ def main():
     )
 
     with open(
-    OUTPUT_FILE,
-    "w",
-    encoding="utf-8",
-) as file:
-    json.dump(
-        {
-            "updatedAt": datetime.now(timezone.utc).isoformat(),
-            "people": students,
-        },
-        file,
-        ensure_ascii=False,
-        indent=2,
-    )
+        OUTPUT_FILE,
+        "w",
+        encoding="utf-8",
+    ) as file:
+        json.dump(
+            {
+                "updatedAt": datetime.now(timezone.utc).isoformat(),
+                "people": students,
+            },
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
 
     print(
         f"Generated {OUTPUT_FILE}"
