@@ -1,5 +1,10 @@
 name: Update birthday data
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_data.py'
+      - '.github/workflows/update-data.yml'
   schedule:
     - cron: '5 0 * * *'
   workflow_dispatch:
