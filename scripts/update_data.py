@@ -332,17 +332,22 @@ def main():
         exist_ok=True,
     )
 
+   from datetime import datetime, timezone
+
     with open(
-        OUTPUT_FILE,
-        "w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            students,
-            file,
-            ensure_ascii=False,
-            indent=2,
-        )
+    OUTPUT_FILE,
+    "w",
+    encoding="utf-8",
+) as file:
+    json.dump(
+        {
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+            "people": students,
+        },
+        file,
+        ensure_ascii=False,
+        indent=2,
+    )
 
     print(
         f"Generated {OUTPUT_FILE}"
