@@ -225,9 +225,11 @@ async function load() {
   people = normalizePeople(dataJson);
   hash = authJson.passwordHash || '';
 
-  $('updated').textContent = dataJson.updatedAt
-    ? new Date(dataJson.updatedAt).toLocaleString('id-ID')
-    : '-';
+  $('updated').textContent = new Date().toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
 
   setupFilters();
   renderTodayBirthdays();
