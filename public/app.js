@@ -166,9 +166,11 @@ function animateResults() {
   });
 
   const pulse = $('resultPulse');
-  pulse.classList.remove('is-pulsing');
-  void pulse.offsetWidth;
-  pulse.classList.add('is-pulsing');
+  if (pulse) {
+    pulse.classList.remove('is-pulsing');
+    void pulse.offsetWidth;
+    pulse.classList.add('is-pulsing');
+  }
 }
 
 let directoryPage = 1;
@@ -367,3 +369,22 @@ load()
   .catch(error => {
     $('loginError').textContent = error.message;
   });
+
+
+function applyTheme(theme) {
+  const selected = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = selected;
+  try { localStorage.setItem('birthday-theme', selected); } catch {}
+  document.querySelectorAll('[data-theme-toggle]').forEach(button => {
+    const nextLabel = selected === 'dark' ? 'Mode terang' : 'Mode gelap';
+    button.innerHTML = `${selected === 'dark' ? '☀' : '☾'} <span>${nextLabel}</span>`;
+    button.setAttribute('aria-label', `Ganti ke ${nextLabel.toLowerCase()}`);
+  });
+}
+
+document.querySelectorAll('[data-theme-toggle]').forEach(button => {
+  button.addEventListener('click', () => {
+    applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
+});
+applyTheme(document.documentElement.dataset.theme);
