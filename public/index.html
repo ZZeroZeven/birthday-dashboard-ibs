@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080b12">
   <title>Birthday Directory</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <main id="loginView" class="login-view">
@@ -40,84 +40,60 @@
       <button id="logoutBtn" class="secondary-btn" type="button">Keluar</button>
     </header>
 
-    <section class="stats" aria-label="Ringkasan data">
-      <div class="stat-card">
-        <span>Total data</span>
-        <strong id="total">0</strong>
+    <nav class="page-nav" aria-label="Halaman direktori">
+      <button class="nav-link is-active" type="button" data-page-target="overview"><span>01</span> Ringkasan</button>
+      <button class="nav-link" type="button" data-page-target="directory"><span>02</span> Direktori <b id="navTotal">0</b></button>
+      <button class="nav-link" type="button" data-page-target="calendar"><span>03</span> Kalender</button>
+    </nav>
+
+    <section class="page-panel is-active" data-page="overview">
+      <div class="section-intro">
+        <div><p class="eyebrow">OVERVIEW / 2026</p><h2>Rayakan momen mereka.</h2></div>
+        <p class="intro-note">Satu tempat untuk mengingat setiap hari spesial di komunitas IBS.</p>
       </div>
-      <div class="stat-card">
-        <span>Ditampilkan</span>
-        <strong id="shown">0</strong>
-      </div>
-      <div class="stat-card">
-        <span>Hari Ini</span>
-        <strong id="updated">-</strong>
-      </div>
+      <section class="stats" aria-label="Ringkasan data">
+        <div class="stat-card"><span>Total anggota</span><strong id="total">0</strong><small>di direktori</small></div>
+        <div class="stat-card"><span>Ulang tahun hari ini</span><strong id="todayCount">0</strong><small id="todayBirthdayDate">-</small></div>
+        <div class="stat-card"><span>Terakhir diperbarui</span><strong id="updated">-</strong><small>data terbaru</small></div>
+      </section>
+      <section id="todayBirthday" class="today-birthday" aria-live="polite">
+        <div class="today-header"><div><div class="eyebrow">TODAY'S CELEBRATION</div><h2>Ulang tahun hari ini</h2><p>Jangan lupa kirimkan ucapan terbaikmu.</p></div><span class="today-sparkle" aria-hidden="true">✳</span></div>
+        <div id="todayBirthdayList" class="today-list"></div>
+      </section>
+      <button class="text-link" type="button" data-page-target="directory">Lihat semua nama <span>↗</span></button>
     </section>
 
-    <section id="todayBirthday" class="today-birthday" aria-live="polite">
-      <div class="today-header">
-        <div>
-          <div class="eyebrow">TODAY</div>
-          <h2>🎂 Ulang Tahun Hari Ini</h2>
-          <p id="todayBirthdayDate">-</p>
-        </div>
-        <div id="todayCount" class="today-count">0</div>
+    <section class="page-panel" data-page="directory">
+      <div class="section-intro">
+        <div><p class="eyebrow">THE DIRECTORY / 01—100</p><h2>Temukan nama mereka.</h2></div>
+        <p class="intro-note">Jelajahi daftar ulang tahun, satu nama spesial dalam satu waktu.</p>
       </div>
-      <div id="todayBirthdayList" class="today-list"></div>
+      <section class="filters-panel" aria-label="Filter direktori">
+        <div class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" autocomplete="off" placeholder="Cari nama..." aria-label="Cari nama"></div>
+        <select id="month" aria-label="Filter bulan"><option value="">Semua bulan</option></select>
+        <select id="day" aria-label="Filter tanggal"><option value="">Semua tanggal</option></select>
+        <select id="generation" aria-label="Filter angkatan"><option value="">Semua angkatan</option></select>
+        <button id="resetBtn" class="secondary-btn" type="button">Reset</button>
+      </section>
+      <section class="results-card">
+        <div class="results-heading"><div><div class="eyebrow">BIRTHDAY INDEX</div><h2>Semua ulang tahun <span id="resultLabel"></span></h2></div><div id="directoryRange" class="directory-range">0 nama</div></div>
+        <div class="table-scroll"><table><thead><tr><th>No.</th><th>Nama</th><th>Tanggal lahir</th><th>Angkatan</th><th>Berikutnya</th></tr></thead><tbody id="tbody"></tbody></table></div>
+        <div id="empty" class="empty-state hide"><div class="empty-icon">⌁</div><strong>Tidak ada data</strong><span>Coba ubah kata kunci atau filter pencarian.</span></div>
+        <div id="pagination" class="pagination" aria-label="Navigasi halaman direktori"></div>
+      </section>
     </section>
 
-    <section class="filters-panel">
-      <div class="search-box">
-        <span aria-hidden="true">⌕</span>
-        <input id="search" type="search" autocomplete="off" placeholder="Cari nama..." aria-label="Cari nama">
+    <section class="page-panel" data-page="calendar">
+      <div class="section-intro">
+        <div><p class="eyebrow">THE YEAR / 2026</p><h2>Kalender perayaan.</h2></div>
+        <p class="intro-note">Lihat siapa saja yang berulang tahun di setiap bulan.</p>
       </div>
-      <select id="month" aria-label="Filter bulan">
-        <option value="">Semua bulan</option>
-      </select>
-      <select id="day" aria-label="Filter tanggal">
-        <option value="">Semua tanggal</option>
-      </select>
-      <select id="generation" aria-label="Filter angkatan">
-        <option value="">Semua angkatan</option>
-      </select>
-      <button id="resetBtn" class="secondary-btn" type="button">Reset</button>
+      <div class="calendar-toolbar"><span class="eyebrow">PILIH BULAN</span><div id="monthPicker" class="month-picker" role="group" aria-label="Pilih bulan"></div></div>
+      <section class="calendar-card"><div class="calendar-heading"><div><p class="eyebrow" id="calendarEyebrow">MONTHLY LIST</p><h2 id="calendarTitle">Januari</h2></div><span id="calendarCount" class="calendar-count">0 nama</span></div><div id="calendarList" class="calendar-list"></div></section>
     </section>
-
-    <section class="results-card">
-      <div class="results-heading">
-        <div>
-          <div class="eyebrow">UPCOMING</div>
-          <h2>Ulang tahun yang akan datang <span id="resultLabel"></span></h2>
-        </div>
-        <div class="system-status" aria-label="System Online"><span id="resultPulse" class="result-pulse" aria-hidden="true"></span><span>System Online</span></div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Nama</th>
-              <th>Tanggal Lahir</th>
-              <th>Angkatan</th>
-              <th>Countdown</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-
-      <div id="empty" class="empty-state hide">
-        <div class="empty-icon">⌁</div>
-        <strong>Tidak ada data</strong>
-        <span>Coba ubah kata kunci atau filter pencarian.</span>
-      </div>
-    </section>
-
     <footer>Birthday Directory • ZZeroZeven Devs | © 2026</footer>
   </main>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
