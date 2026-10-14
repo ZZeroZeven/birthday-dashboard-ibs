@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080b12">
   <title>Birthday Directory</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
-  <link rel="stylesheet" href="style.css?v=4">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("birthday-theme")==="light"?"light":"dark"}catch{document.documentElement.dataset.theme="dark"}</script>
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <main id="loginView" class="login-view">
@@ -16,6 +17,8 @@
       <p class="eyebrow">BIRTHDAY DIRECTORY</p>
       <h1>Upcoming <b>Birthdays</b></h1>
       <p class="login-subtitle">Masuk untuk melihat daftar ulang tahun yang akan datang.</p>
+
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Ganti ke mode terang">☀ <span>Mode terang</span></button>
 
       <div class="input-wrap">
         <label for="password">Password</label>
@@ -37,7 +40,7 @@
         <h1>Upcoming <b>Birthdays</b></h1>
         <p class="page-subtitle">Daftar ulang tahun berdasarkan data terbaru.</p>
       </div>
-      <button id="logoutBtn" class="secondary-btn" type="button">Keluar</button>
+      <div class="topbar-actions"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Ganti ke mode terang">☀ <span>Mode terang</span></button><button id="logoutBtn" class="secondary-btn" type="button">Keluar</button></div>
     </header>
 
     <nav class="page-nav" aria-label="Halaman direktori">
@@ -94,6 +97,6 @@
     <footer>Birthday Directory • ZZeroZeven Devs | © 2026</footer>
   </main>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
