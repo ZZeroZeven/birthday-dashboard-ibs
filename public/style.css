@@ -660,3 +660,46 @@ html[data-theme="light"] .theme-toggle{background:#fffefa;color:#282923;border-c
   .topbar-actions{align-items:flex-end;flex-direction:column}
   .login-card>.theme-toggle{margin-top:16px}
 }
+
+
+/* Mobile-first directory cards and device-aware affordances */
+.device-info{margin:8px 0 0;color:var(--muted);font-size:12px;letter-spacing:.02em}
+@media(max-width:760px){
+  main{padding:16px}
+  .topbar-actions{flex-direction:row;align-items:center;margin-top:14px}
+  .topbar .secondary-btn{margin-top:0}
+  .page-nav{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;margin-bottom:24px}
+  .nav-link{flex:1;min-height:44px}
+  .nav-link b{display:none}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .stat-card{padding:14px 12px;border-radius:14px}
+  .stat-card span{font-size:11px;line-height:1.35;display:block;min-height:30px}
+  .stat-card strong{font-size:26px}
+  .today-birthday{padding:20px;border-radius:16px}
+  .filters-panel{gap:8px;padding:10px}
+  .filters-panel input,.filters-panel select,.filters-panel button{min-height:46px}
+  .results-card{padding:14px;border-radius:16px}
+  .table-scroll{overflow:visible}
+  table{min-width:0;border-collapse:separate;border-spacing:0 9px}
+  thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  tbody{display:grid;gap:9px}
+  tbody tr.result-row{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--panel);opacity:1}
+  tbody tr.result-row td{display:grid;gap:3px;padding:0;border:0;font-size:13px;min-width:0;overflow-wrap:anywhere}
+  tbody tr.result-row td::before{content:attr(data-label);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  tbody tr.result-row td:nth-child(2){grid-column:1/-1;font-size:15px}
+  tbody tr.result-row td:nth-child(2)::before{content:"Nama"}
+  tbody tr.result-row td:first-child{display:none}
+  .countdown{width:max-content;max-width:100%;white-space:normal}
+  .calendar-card{padding:18px}
+}
+@media(max-width:420px){
+  main{padding:12px}
+  .topbar h1{font-size:32px}
+  .topbar-actions{justify-content:space-between}
+  .stats{gap:6px}
+  .stat-card{padding:12px 9px}
+  .stat-card strong{font-size:23px}
+  .stat-card span{font-size:10px}
+  .nav-link{padding:9px 6px;font-size:11px}
+  .results-heading h2{font-size:20px}
+}
