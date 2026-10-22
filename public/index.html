@@ -7,7 +7,7 @@
   <title>Birthday Directory</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem("birthday-theme")==="light"?"light":"dark"}catch{document.documentElement.dataset.theme="dark"}</script>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <main id="loginView" class="login-view">
@@ -38,7 +38,7 @@
       <div>
         <p class="eyebrow">BIRTHDAY DIRECTORY</p>
         <h1>Upcoming <b>Birthdays</b></h1>
-        <p class="page-subtitle">Daftar ulang tahun berdasarkan data terbaru.</p>
+        <p class="page-subtitle">Daftar ulang tahun berdasarkan data terbaru.</p><p id="deviceInfo" class="device-info" aria-live="polite"></p>
       </div>
       <div class="topbar-actions"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Ganti ke mode terang">☀ <span>Mode terang</span></button><button id="logoutBtn" class="secondary-btn" type="button">Keluar</button></div>
     </header>
@@ -97,6 +97,6 @@
     <footer>Birthday Directory • ZZeroZeven Devs | © 2026</footer>
   </main>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
