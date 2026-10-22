@@ -3,6 +3,25 @@ const $ = id => document.getElementById(id);
 let people = [];
 let hash = '';
 
+function detectDevice() {
+  const ua = navigator.userAgent || '';
+  const touch = navigator.maxTouchPoints > 1;
+  const width = Math.min(window.innerWidth || screen.width, screen.width || window.innerWidth);
+  const isTabletUA = /iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+  const category = isTabletUA || (touch && width >= 600 && width < 1100)
+    ? 'Tablet'
+    : width < 600 || /Mobile|iPhone|Android.*Mobile/i.test(ua)
+      ? 'Ponsel'
+      : 'Desktop';
+  const info = $('deviceInfo');
+  if (info) info.textContent = `Tampilan ${category.toLowerCase()} · menyesuaikan layar`;
+  document.documentElement.dataset.device = category.toLowerCase();
+}
+
+detectDevice();
+window.addEventListener('resize', detectDevice, { passive: true });
+window.addEventListener('orientationchange', detectDevice, { passive: true });
+
 const months = [
   'Januari','Februari','Maret','April','Mei','Juni',
   'Juli','Agustus','September','Oktober','November','Desember'
@@ -211,10 +230,10 @@ function render() {
   $('resultLabel').textContent = `(${result.length})`;
   $('tbody').innerHTML = visible.map((person, index) => `
     <tr class="result-row" style="--i:${index}">
-      <td>${String((directoryPage - 1) * pageSize + index + 1).padStart(2, '0')}</td>
-      <td><strong>${esc(person.name)}</strong></td><td>${esc(fmt(person.birthday))}</td>
-      <td>${esc(person.angkatan || 'Tidak diketahui')}</td>
-      <td><span class="countdown">${esc(countdownText(person.birthday))}</span></td>
+      <td data-label="No.">${String((directoryPage - 1) * pageSize + index + 1).padStart(2, '0')}</td>
+      <td data-label="Nama"><strong>${esc(person.name)}</strong></td><td data-label="Tanggal lahir">${esc(fmt(person.birthday))}</td>
+      <td data-label="Angkatan">${esc(person.angkatan || 'Tidak diketahui')}</td>
+      <td data-label="Berikutnya"><span class="countdown">${esc(countdownText(person.birthday))}</span></td>
     </tr>`).join('');
   $('empty').classList.toggle('hide', result.length > 0);
   renderPagination(result.length);
